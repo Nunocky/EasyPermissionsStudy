@@ -1,13 +1,20 @@
 package org.nunocky.easypermissionstudy
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.vmadalin.easypermissions.EasyPermissions
+import com.vmadalin.easypermissions.dialogs.DEFAULT_SETTINGS_REQ_CODE
+import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import org.nunocky.easypermissionstudy.databinding.FragmentMainBinding
 
 
@@ -36,6 +43,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks,
 
     override fun onResume() {
         super.onResume()
+
         checkPermissions()
     }
 
@@ -49,7 +57,7 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks,
 
     private fun checkPermissions() {
         if (!EasyPermissions.hasPermissions(
-                requireActivity(),
+                requireContext(),
                 *(requiredPermissions.toTypedArray())
             )
         ) {
@@ -67,8 +75,12 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks,
         if (EasyPermissions.somePermissionPermanentlyDenied(this, requiredPermissions)) {
             toast("somePermissionPermanentlyDenied")
 
-            val dialog = SimpleDialog()
-            dialog.show(childFragmentManager, "dialog")
+            SettingsDialog.Builder(requireContext())
+                .build()
+                .show()
+
+//            val dialog = SimpleDialog()
+//            dialog.show(childFragmentManager, "dialog")
 
             // ... or want to call System Setting
 //            val intent = Intent(
@@ -96,8 +108,21 @@ class MainFragment : Fragment(), EasyPermissions.PermissionCallbacks,
         toast("onRationaleDenied")
     }
 
+    // TODO : not called?
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        toast("onActivityResult")
+
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == DEFAULT_SETTINGS_REQ_CODE) {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                findNavController().popBackStack()
+            }
+        }
+    }
+
     private fun toast(message: String) {
-        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     companion object {
